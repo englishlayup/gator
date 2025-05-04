@@ -30,6 +30,9 @@ func main() {
 	commands.register("login", handlerLogin)
 	commands.register("register", handlerRegister)
 	commands.register("reset", handlerReset)
+	commands.register("users", handlerUsers)
+	commands.register("agg", handlerAgg)
+	commands.register("addfeed", handlerAddFeed)
 	args := os.Args
 	if len(args) < 2 {
 		log.Fatal("Usage: gator [login|register] <username>")
