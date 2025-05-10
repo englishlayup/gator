@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -15,13 +14,7 @@ func handlerLogin(s *state, cmd command) error {
 	}
 	ctx := context.Background()
 	name := cmd.args[0]
-	_, err := s.db.GetUser(
-		ctx,
-		sql.NullString{
-			String: name,
-			Valid:  true,
-		},
-	)
+	_, err := s.db.GetUser(ctx, name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to login as %v\n", name)
 		log.Fatal(err)

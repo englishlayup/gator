@@ -7,7 +7,7 @@ package database
 
 import (
 	"context"
-	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -34,20 +34,20 @@ SELECT inserted_feed_follow.id, inserted_feed_follow.created_at, inserted_feed_f
 
 type CreateFeedFollowParams struct {
 	ID        uuid.UUID
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
-	UserID    uuid.NullUUID
-	FeedID    uuid.NullUUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	UserID    uuid.UUID
+	FeedID    uuid.UUID
 }
 
 type CreateFeedFollowRow struct {
 	ID        uuid.UUID
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
-	UserID    uuid.NullUUID
-	FeedID    uuid.NullUUID
-	FeedName  sql.NullString
-	UserName  sql.NullString
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	UserID    uuid.UUID
+	FeedID    uuid.UUID
+	FeedName  string
+	UserName  string
 }
 
 func (q *Queries) CreateFeedFollow(ctx context.Context, arg CreateFeedFollowParams) (CreateFeedFollowRow, error) {
@@ -83,15 +83,15 @@ SELECT feed_follows.id, feed_follows.created_at, feed_follows.updated_at, feed_f
 
 type GetFeedFollowsForUserRow struct {
 	ID        uuid.UUID
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
-	UserID    uuid.NullUUID
-	FeedID    uuid.NullUUID
-	FeedName  sql.NullString
-	UserName  sql.NullString
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	UserID    uuid.UUID
+	FeedID    uuid.UUID
+	FeedName  string
+	UserName  string
 }
 
-func (q *Queries) GetFeedFollowsForUser(ctx context.Context, userID uuid.NullUUID) ([]GetFeedFollowsForUserRow, error) {
+func (q *Queries) GetFeedFollowsForUser(ctx context.Context, userID uuid.UUID) ([]GetFeedFollowsForUserRow, error) {
 	rows, err := q.db.QueryContext(ctx, getFeedFollowsForUser, userID)
 	if err != nil {
 		return nil, err

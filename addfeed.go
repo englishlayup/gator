@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -20,7 +19,7 @@ func handlerAddFeed(s *state, cmd command) error {
 	name := cmd.args[0]
 	url := cmd.args[1]
 	currentTime := time.Now()
-	user, err := s.db.GetUser(ctx, sql.NullString{String: s.cfg.CurrentUserName, Valid: true})
+	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Can't retrieve user %v while adding feed\n", user.Name)
 		return err
@@ -28,11 +27,11 @@ func handlerAddFeed(s *state, cmd command) error {
 
 	feedParams := database.CreateFeedParams{
 		ID:        uuid.New(),
-		CreatedAt: sql.NullTime{Time: currentTime, Valid: true},
-		UpdatedAt: sql.NullTime{Time: currentTime, Valid: true},
-		Name:      sql.NullString{String: name, Valid: true},
-		Url:       sql.NullString{String: url, Valid: true},
-		UserID:    uuid.NullUUID{UUID: user.ID, Valid: true},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		Name:      name,
+		Url:       url,
+		UserID:    user.ID,
 	}
 	feed, err := s.db.CreateFeed(ctx, feedParams)
 	if err != nil {
@@ -40,12 +39,12 @@ func handlerAddFeed(s *state, cmd command) error {
 	}
 	s.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
 		ID:        uuid.New(),
-		CreatedAt: sql.NullTime{Time: currentTime, Valid: true},
-		UpdatedAt: sql.NullTime{Time: currentTime, Valid: true},
-		UserID:    uuid.NullUUID{UUID: user.ID, Valid: true},
-		FeedID:    uuid.NullUUID{UUID: feed.ID, Valid: true},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		UserID:    user.ID,
+		FeedID:    feed.ID,
 	})
 
-	fmt.Printf("Followed %v (%v)\n", feed.Name.String, feed.Url.String)
+	fmt.Printf("Followed %v (%v)\n", feed.Name, feed.Url)
 	return nil
 }

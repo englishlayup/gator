@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -19,25 +18,25 @@ func handlerFollow(s *state, cmd command) error {
 	currentTime := time.Now()
 	ctx := context.Background()
 
-	feed, err := s.db.GetFeedByUrl(ctx, sql.NullString{String: url, Valid: true})
+	feed, err := s.db.GetFeedByUrl(ctx, url)
 	if err != nil {
 		return err
 	}
-	user, err := s.db.GetUser(ctx, sql.NullString{String: s.cfg.CurrentUserName, Valid: true})
+	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
 	if err != nil {
 		return err
 	}
 	feedFollowRecord, err := s.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
 		ID:        uuid.New(),
-		CreatedAt: sql.NullTime{Time: currentTime, Valid: true},
-		UpdatedAt: sql.NullTime{Time: currentTime, Valid: true},
-		FeedID:    uuid.NullUUID{UUID: feed.ID, Valid: true},
-		UserID:    uuid.NullUUID{UUID: user.ID, Valid: true},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		FeedID:    feed.ID,
+		UserID:    user.ID,
 	})
 	if err != nil {
 		return err
 	}
-	fmt.Println(feedFollowRecord.UserName.String)
-	fmt.Println(feedFollowRecord.FeedName.String)
+	fmt.Println(feedFollowRecord.UserName)
+	fmt.Println(feedFollowRecord.FeedName)
 	return nil
 }

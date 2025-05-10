@@ -13,10 +13,10 @@ func handlerUsers(s *state, _ command) error {
 	}
 
 	for _, user := range users {
-		if user.String == s.cfg.CurrentUserName {
-			fmt.Printf("* %v (current)\n", user.String)
+		if user == s.cfg.CurrentUserName {
+			fmt.Printf("* %v (current)\n", user)
 		} else {
-			fmt.Printf("* %v\n", user.String)
+			fmt.Printf("* %v\n", user)
 		}
 	}
 	return nil
