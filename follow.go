@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Expect 1 argument, the url.")
 	}
@@ -19,10 +19,6 @@ func handlerFollow(s *state, cmd command) error {
 	ctx := context.Background()
 
 	feed, err := s.db.GetFeedByUrl(ctx, url)
-	if err != nil {
-		return err
-	}
-	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
 	if err != nil {
 		return err
 	}

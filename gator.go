@@ -13,6 +13,17 @@ import (
 	"github.com/englishlayup/gator/internal/rssfeed"
 )
 
+func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
+    return func(s *state, c command) error {
+        user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+        if err != nil {
+            return err
+        }
+        handler(s, c, user)
+        return nil
+    }
+}
+
 func fetchFeed(ctx context.Context, feedURL string) (*rssfeed.RSSFeed, error) {
 	client := http.DefaultClient
 	req, err := http.NewRequestWithContext(ctx, "GET", feedURL, nil)

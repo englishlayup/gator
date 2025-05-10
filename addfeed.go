@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/englishlayup/gator/internal/database"
 	"github.com/google/uuid"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return errors.New("Expect 2 arguments, the feed name and url.")
 	}
@@ -19,11 +18,6 @@ func handlerAddFeed(s *state, cmd command) error {
 	name := cmd.args[0]
 	url := cmd.args[1]
 	currentTime := time.Now()
-	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't retrieve user %v while adding feed\n", user.Name)
-		return err
-	}
 
 	feedParams := database.CreateFeedParams{
 		ID:        uuid.New(),
