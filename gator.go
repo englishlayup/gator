@@ -13,6 +13,26 @@ import (
 	"github.com/englishlayup/gator/internal/rssfeed"
 )
 
+func scrapeFeeds(s *state) error {
+    feed, err := s.db.GetNextFeedToFetch(context.Background())
+    if err != nil {
+        return err
+    }
+    if err := s.db.MarkFeedFetched(context.Background(), feed.ID); err != nil {
+        return err
+    }
+
+    rssFeed, err := fetchFeed(context.Background(), feed.Url)
+    if err != nil {
+        return err
+    }
+    
+    for _, item := range rssFeed.Channel.Item {
+        fmt.Println(item.Title)
+    }
+    return nil
+}
+
 func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
     return func(s *state, c command) error {
         user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)

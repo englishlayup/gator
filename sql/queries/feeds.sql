@@ -11,11 +11,17 @@ VALUES (
 RETURNING *;
 
 -- name: GetFeeds :many
-SELECT feeds.name, url, users.id AS user_id, users.name AS username
-    FROM feeds
-    LEFT JOIN users
-    ON feeds.user_id = users.id;
+SELECT * FROM feeds;
 
 -- name: GetFeedByUrl :one
 SELECT * FROM feeds
     WHERE url = $1 LIMIT 1;
+
+-- name: MarkFeedFetched :exec
+UPDATE feeds
+    SET updated_at = NOW(), last_fetched_at = NOW()
+    WHERE id = $1;
+
+-- name: GetNextFeedToFetch :one
+SELECT * FROM feeds
+    ORDER BY last_fetched_at NULLS FIRST LIMIT 1;
