@@ -3,45 +3,70 @@ package main
 import (
 	"context"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"html"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/englishlayup/gator/internal/config"
 	"github.com/englishlayup/gator/internal/database"
 	"github.com/englishlayup/gator/internal/rssfeed"
+	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 func scrapeFeeds(s *state) error {
-    feed, err := s.db.GetNextFeedToFetch(context.Background())
-    if err != nil {
-        return err
-    }
-    if err := s.db.MarkFeedFetched(context.Background(), feed.ID); err != nil {
-        return err
-    }
+	feed, err := s.db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return err
+	}
+	if err := s.db.MarkFeedFetched(context.Background(), feed.ID); err != nil {
+		return err
+	}
 
-    rssFeed, err := fetchFeed(context.Background(), feed.Url)
-    if err != nil {
-        return err
-    }
-    
-    for _, item := range rssFeed.Channel.Item {
-        fmt.Println(item.Title)
-    }
-    return nil
+	rssFeed, err := fetchFeed(context.Background(), feed.Url)
+	if err != nil {
+		return err
+	}
+	for _, item := range rssFeed.Channel.Item {
+		publishDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			return err
+		}
+		_, err = s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: item.Description,
+			PublishedAt: publishDate,
+			FeedID:      feed.ID,
+		})
+		if err != nil {
+			var pqErr *pq.Error
+			if errors.As(err, &pqErr) {
+				if pqErr.Code == "23505" {
+					continue
+				}
+			}
+			return err
+		}
+	}
+	return nil
 }
 
 func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
-    return func(s *state, c command) error {
-        user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-        if err != nil {
-            return err
-        }
-        handler(s, c, user)
-        return nil
-    }
+	return func(s *state, c command) error {
+		user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+		if err != nil {
+			return err
+		}
+		handler(s, c, user)
+		return nil
+	}
 }
 
 func fetchFeed(ctx context.Context, feedURL string) (*rssfeed.RSSFeed, error) {
