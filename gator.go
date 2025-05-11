@@ -109,6 +109,17 @@ func (c *commands) run(s *state, cmd command) error {
 	return handler(s, cmd)
 }
 
+func (c *commands) register(name string, f func(*state, command) error, description string) {
+	c.handlers[name] = f
+    c.descriptions[name] = description
+}
+
+func (c *commands) help() {
+    for cmd, desc := range c.descriptions {
+        fmt.Println(cmd + ": " + desc)
+    }
+}
+
 type state struct {
 	db  *database.Queries
 	cfg *config.Config
@@ -121,4 +132,5 @@ type command struct {
 
 type commands struct {
 	handlers map[string]func(*state, command) error
+    descriptions map[string]string
 }

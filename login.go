@@ -25,7 +25,3 @@ func handlerLogin(s *state, cmd command) error {
 	fmt.Printf("Username set to %v", s.cfg.CurrentUserName)
 	return nil
 }
-
-func (c *commands) register(name string, f func(*state, command) error) {
-	c.handlers[name] = f
-}
